@@ -1,12 +1,17 @@
 $(document).ready(function() {
-	var getButton = $('.getButton');
+    var getButton = $('.getButton');
     var result;
     var id;
-    var finalresult;
+    var finalresult  = [];
+
+    Number.prototype.mod = function(n) {
+        return ((this%n)+n)%n;
+    };
 
 	getButton.click(function(event){  
         result = "";
-        finalresult  = "";
+        finalresult = [];
+        $(".server").val("...");
 		$.ajax({
             url: "https://www.eliftech.com/school-task",
             method: "GET",
@@ -17,24 +22,20 @@ $(document).ready(function() {
             $(".getInput").val(data.expressions);            
         	var mass = str.replace(/[\[\]\"]/g, "").split(',');
             for(var i = 0; i < mass.length; i++){  
-                if(finalresult === ""){
-                  finalresult = firstMath(mass[i]);  
-                }        
-                else{    
-                 finalresult = finalresult + ", " + firstMath(mass[i]);
-                }
+                finalresult.push(firstMath(mass[i]));
             }
             $(".answer").val(finalresult);
         });
+
+        var results = {id:id, results:finalresult}
+        var jsonResults = JSON.stringify(results);
+
         $.ajax({
             url: "https://www.eliftech.com/school-task",
             method: "POST",
-
-            data:  
-            {
-                "id": id,
-                "results": finalresult 
-            }
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            data: jsonResults
         }).then(function(res) {
             $(".server").val(res.passed);
         }); 
@@ -75,11 +76,11 @@ $(document).ready(function() {
                 formath = 42
             }
             else{
-               formath = parseInt(mass[mass.length-2], 10) % parseInt(mass[mass.length-1], 10); 
+               formath = parseInt(mass[mass.length-2], 10).mod(parseInt(mass[mass.length-1], 10)); 
             }
             break;
             case "/":
-                        if(mass[mass.length-1]==0){
+            if(mass[mass.length-1]==0){
                 formath = 42
             }
             else{
